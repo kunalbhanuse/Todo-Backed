@@ -5,6 +5,8 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../../common/util/jwt.utils.js";
+import { sendMail } from "../../common/util/sendMail.util.js";
+import crypto from "node:crypto";
 
 const generateAccessAndRefreshToken = async (user) => {
   const accessToken = await generateAccessToken({
@@ -25,23 +27,41 @@ const generateAccessAndRefreshToken = async (user) => {
 
 const registerService = async ({ name, email, password, role }) => {
   if (!name || !email || !password || !role) {
-    throw ApiError.notFound("All fields are required");
+    throw ApiError.badRequest("All fields are required");
   }
 
   const existingUserCheck = await User.findOne({ email });
   if (existingUserCheck) throw ApiError.conflict("Email already register");
+
+  const secureToken = crypto.randomBytes(16).toString("hex");
 
   const user = await User.create({
     name,
     email,
     password,
     role,
+    emailVerificationToken: secureToken,
+    emailVerificationExpires: Date.now() + 1000 * 60 * 60, // 1 hour
   });
 
   // console.log(user);
   if (!user) {
     throw ApiError.notFound("Error creating user");
   }
+
+  const verifyLink = `http://localhost:3000/auth/verifyEmail?token=${secureToken}`;
+
+  sendMail(
+    email, // ✅ correct user email
+    "Verify your email",
+    `
+      <h2>Hello ${name}</h2>
+      <p>Click below to verify your email:</p>
+      <a href="${verifyLink}">Verify Email</a>
+    `,
+  ).catch((err) => {
+    console.error("Email failed:", err.message);
+  });
   return user;
 };
 
@@ -98,4 +118,43 @@ const refreshTokensServises = async (token) => {
   return { accessToken, refreshtoken };
 };
 
-export { registerService, loginService, getMeServises, refreshTokensServises };
+const verifiedEmailService = async (token) => {
+  console.log("VERIFY controllere HIT");
+  if (!token) {
+    throw ApiError.badRequest("Token is required");
+  }
+  console.log("TOKEN : -", token);
+
+  const user = await User.findOne({
+    emailVerificationToken: token,
+    emailVerificationExpires: { $gt: Date.now() },
+  }).select("+emailVerificationToken +emailVerificationExpires");
+
+  if (!user) {
+    throw ApiError.badRequest("Token expired or invalid");
+  }
+
+  user.isVerified = true;
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save();
+  return user;
+};
+// const sendMailServises = async (to, sub, msg) => {
+//   const info = await transporter.sendMail({
+//     from: process.env.SMTP_USER,
+//     to: to,
+//     subject: sub,
+//     html: msg,
+//   });
+//   return info;
+// };
+
+export {
+  registerService,
+  loginService,
+  getMeServises,
+  refreshTokensServises,
+  verifiedEmailService,
+  // sendMailServises,
+};

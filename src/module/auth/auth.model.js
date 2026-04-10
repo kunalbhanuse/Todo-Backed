@@ -33,9 +33,11 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    refreshtoken: { type: String, select: false, select: false },
+    refreshtoken: { type: String, select: false },
+    emailVerificationToken: { type: String, select: false },
+    emailVerificationExpires: { type: Date, select: false },
   },
-  { timeStamp: true },
+  { timestamp: true },
 );
 
 userSchema.pre("save", async function () {

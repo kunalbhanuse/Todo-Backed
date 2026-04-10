@@ -4,7 +4,6 @@ import {
   registrationValidationZod,
   loginValidationZod,
 } from "./dto/register.dto.js";
-import { success } from "zod";
 
 const register = async (req, res) => {
   try {
@@ -91,4 +90,50 @@ const refreshToken = async (req, res) => {
     });
   }
 };
-export { register, login, getMe, refreshToken };
+
+const verifyEmail = async (req, res) => {
+  try {
+    console.log("VERIFY controllere HIT");
+    const { token } = req.query;
+    const user = await authServises.verifiedEmailService(token);
+    return res.status(200).json({
+      success: true,
+      data: user,
+      message: "Email verified successfully 🎉",
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+// const sendMail = async (req, res) => {
+//   try {
+//     const mail = await authServises.sendMailServises(
+//       "kingtraders11@gmail.com",
+//       "this is subject",
+//       "<h1>This is mail</h1>",
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Mail sent",
+//       data: mail,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+export {
+  register,
+  login,
+  getMe,
+  refreshToken,
+  verifyEmail,
+  //  sendMail
+};
