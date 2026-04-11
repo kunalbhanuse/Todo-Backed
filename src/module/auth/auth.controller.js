@@ -53,12 +53,26 @@ const login = async (req, res) => {
       );
   } catch (error) {
     const statusCode = error.statusCode || 500;
+
     res.status(statusCode).json({
       success: false,
       message: error.message || " login Failed",
       error: error.errors || [],
     });
   }
+};
+const logout = async (req, res) => {
+  // console.log("REQ>USER :-", req.user);
+  const user = await authServises.logutServises(req.user);
+  const options = {
+    httpOnly: true,
+    secure: false,
+  };
+  res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(201, user, "Logout Succefully "));
 };
 
 const getMe = async (req, res) => {
@@ -135,5 +149,6 @@ export {
   getMe,
   refreshToken,
   verifyEmail,
+  logout,
   //  sendMail
 };

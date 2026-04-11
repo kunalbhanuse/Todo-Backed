@@ -85,6 +85,21 @@ const loginService = async ({ email, password }) => {
 
   return { user, refreshtoken, accessToken };
 };
+const logutServises = async ({ id }) => {
+  if (!id) {
+    throw ApiError.badRequest("U should login before the logOut");
+  }
+  const user = await User.findById(id).select(
+    "+password +refreshToken +emailVerificationToken +emailVerificationExpires",
+  );
+  if (!user) {
+    throw ApiError.badRequest("No login user with this id");
+  }
+
+  user.rerefreshtoken = undefined;
+  await user.save();
+  return user;
+};
 
 const getMeServises = async ({ id, role }) => {
   const user = await User.findById(id);
@@ -153,6 +168,7 @@ const verifiedEmailService = async (token) => {
 export {
   registerService,
   loginService,
+  logutServises,
   getMeServises,
   refreshTokensServises,
   verifiedEmailService,
