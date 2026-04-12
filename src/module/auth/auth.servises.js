@@ -7,6 +7,7 @@ import {
 } from "../../common/util/jwt.utils.js";
 import { sendMail } from "../../common/util/sendMail.util.js";
 import crypto from "node:crypto";
+import { email } from "zod";
 
 const generateAccessAndRefreshToken = async (user) => {
   const accessToken = await generateAccessToken({
@@ -155,6 +156,47 @@ const verifiedEmailService = async (token) => {
   await user.save();
   return user;
 };
+
+const forgetpasswordServises = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw ApiError.badRequest("user with Email does not exits  ");
+  }
+  const secureToken = crypto.randomBytes(16).toString("hex");
+
+  await sendMail(
+    email,
+    "Forget pasword email",
+    `http://localhost:3000/auth/resetPassword?token=${secureToken}`,
+  );
+
+  user.forgetPasswordToken = secureToken;
+  user.forgetPasswordExpires = Date.now() + 1000 * 60 * 60;
+  await user.save();
+  return "Forget password mail sent";
+};
+
+const resetPasswordServises = async ({ token, password }) => {
+  console.log("TOken :- ", token);
+  console.log("password :- ", password);
+  if (!token || !password) {
+    throw ApiError.badRequest("ALL Fiesls Are Required");
+  }
+
+  const user = await User.findOne({
+    forgetPasswordToken: token,
+    forgetPasswordExpires: { $gt: Date.now() },
+  }).select("+forgetPasswordToken +forgetPasswordExpires");
+  console.log("USER : -", user);
+  if (!user) {
+    throw ApiError.badRequest("Token Expired ");
+  }
+  user.password = password;
+  user.forgetPasswordToken = undefined;
+  user.forgetPasswordExpires = undefined;
+  await user.save();
+  return "Password reset Succefull !";
+};
 // const sendMailServises = async (to, sub, msg) => {
 //   const info = await transporter.sendMail({
 //     from: process.env.SMTP_USER,
@@ -172,5 +214,7 @@ export {
   getMeServises,
   refreshTokensServises,
   verifiedEmailService,
+  forgetpasswordServises,
+  resetPasswordServises,
   // sendMailServises,
 };

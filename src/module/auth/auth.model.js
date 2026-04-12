@@ -36,6 +36,8 @@ const userSchema = mongoose.Schema(
     refreshtoken: { type: String, select: false },
     emailVerificationToken: { type: String, select: false },
     emailVerificationExpires: { type: Date, select: false },
+    forgetPasswordToken: { type: String, select: false },
+    forgetPasswordExpires: { type: Date, select: false },
   },
   { timestamp: true },
 );

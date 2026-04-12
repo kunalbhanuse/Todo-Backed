@@ -122,6 +122,21 @@ const verifyEmail = async (req, res) => {
     });
   }
 };
+const forgetpassword = async (req, res) => {
+  const messsage = await authServises.forgetpasswordServises(req.body.email);
+  res
+    .status(201)
+    .json(
+      new ApiResponse(201, messsage, "Forget passsword mail sent succesfully"),
+    );
+};
+
+const resetPassword = async (req, res) => {
+  const message = await authServises.resetPasswordServises(req.body);
+  res
+    .status(201)
+    .json(new ApiResponse(201, message, "reser passsword succesfully"));
+};
 // const sendMail = async (req, res) => {
 //   try {
 //     const mail = await authServises.sendMailServises(
@@ -150,5 +165,7 @@ export {
   refreshToken,
   verifyEmail,
   logout,
+  forgetpassword,
+  resetPassword,
   //  sendMail
 };
