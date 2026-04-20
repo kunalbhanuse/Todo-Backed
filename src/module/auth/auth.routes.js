@@ -11,7 +11,6 @@ authRouter.get("/getMe", isLoggedIn, authController.getMe);
 authRouter.post("/refreshToken", authController.refreshToken);
 authRouter.post("/forgetPassword", authController.forgetpassword);
 authRouter.post("/resetPassword", authController.resetPassword);
-
 authRouter.get("/verifyEmail", authController.verifyEmail);
 
 export default authRouter;
