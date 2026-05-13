@@ -4,7 +4,7 @@ import * as todoController from "./todo.controller.js";
 
 const todoRouter = Router();
 
-todoRouter.use(isLoggedIn);
+// todoRouter.use(isLoggedIn);
 
 todoRouter.post("/crateTodo", todoController.creteTodo);
 todoRouter.get("/getAll", todoController.getAllTodos);

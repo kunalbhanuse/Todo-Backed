@@ -42,15 +42,8 @@ const login = async (req, res) => {
     };
     return res
       .status(201)
-      .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", refreshtoken, options)
-      .json(
-        new ApiResponse(
-          201,
-          { user, accessToken, refreshtoken },
-          "Login succesfull",
-        ),
-      );
+      .json(new ApiResponse(201, { user, accessToken }, "Login succesfull"));
   } catch (error) {
     const statusCode = error.statusCode || 500;
 

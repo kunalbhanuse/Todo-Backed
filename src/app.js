@@ -2,9 +2,10 @@ import express from "express";
 import authRouter from "./module/auth/auth.routes.js";
 import todoRouter from "./module/todo/todo.route.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
